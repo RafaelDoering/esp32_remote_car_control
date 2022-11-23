@@ -1,26 +1,20 @@
 #include "esp_camera.h"
 #include <WiFi.h>
 
-//
-// WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
-//            Ensure ESP32 Wrover Module or other board with PSRAM is selected
-//            Partial images will be transmitted if image exceeds buffer size
-//
-
-// Select camera model
-#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
-//#define CAMERA_MODEL_ESP_EYE // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
-//#define CAMERA_MODEL_M5STACK_WIDE // Has PSRAM
-//#define CAMERA_MODEL_M5STACK_ESP32CAM // No PSRAM
-//#define CAMERA_MODEL_AI_THINKER // Has PSRAM
-//#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
+#define CAMERA_MODEL_AI_THINKER
 
 #include "camera_pins.h"
 
 const char* ssid = "*********";
 const char* password = "*********";
+
+extern int LEFT_BACKWARD_PIN =  2;
+extern int LEFT_FORWARD_PIN = 14;
+extern int RIGHT_FORWARD_PIN = 15;
+extern int RIGHT_BACKWARD_PIN = 13;
+extern int LEAD_PIN = 4;
+
+extern String WiFiAddr ="";
 
 void startCameraServer();
 
@@ -28,6 +22,19 @@ void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
+
+  pinMode(LEFT_BACKWARD_PIN, OUTPUT);
+  pinMode(LEFT_FORWARD_PIN, OUTPUT);
+  pinMode(RIGHT_FORWARD_PIN, OUTPUT);
+  pinMode(RIGHT_BACKWARD_PIN, OUTPUT);
+  pinMode(LEAD_PIN, OUTPUT);
+
+  //initialize
+  digitalWrite(LEFT_BACKWARD_PIN, LOW);
+  digitalWrite(LEFT_FORWARD_PIN, LOW);
+  digitalWrite(RIGHT_FORWARD_PIN, LOW);
+  digitalWrite(RIGHT_BACKWARD_PIN, LOW);
+  digitalWrite(LEAD_PIN, LOW);
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -50,7 +57,7 @@ void setup() {
   config.pin_reset = RESET_GPIO_NUM;
   config.xclk_freq_hz = 20000000;
   config.pixel_format = PIXFORMAT_JPEG;
-  
+
   // if PSRAM IC present, init with UXGA resolution and higher JPEG quality
   //                      for larger pre-allocated frame buffer.
   if(psramFound()){
@@ -62,11 +69,6 @@ void setup() {
     config.jpeg_quality = 12;
     config.fb_count = 1;
   }
-
-#if defined(CAMERA_MODEL_ESP_EYE)
-  pinMode(13, INPUT_PULLUP);
-  pinMode(14, INPUT_PULLUP);
-#endif
 
   // camera init
   esp_err_t err = esp_camera_init(&config);
@@ -85,11 +87,6 @@ void setup() {
   // drop down frame size for higher initial frame rate
   s->set_framesize(s, FRAMESIZE_QVGA);
 
-#if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
-  s->set_vflip(s, 1);
-  s->set_hmirror(s, 1);
-#endif
-
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
@@ -103,10 +100,8 @@ void setup() {
 
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
+  WiFiAddr = WiFi.localIP().toString();
   Serial.println("' to connect");
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-  delay(10000);
-}
+void loop() { }
