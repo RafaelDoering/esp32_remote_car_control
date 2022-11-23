@@ -133,7 +133,10 @@ function Control() {
     };
   }, []);
 
-  return <></>;
+  return <img
+    src={`${BACKEND_URL}:81/stream`}
+    style={{width: "300px", transform: "transform:rotate(180deg)"}}
+  />;
 }
 
 export default Control;
