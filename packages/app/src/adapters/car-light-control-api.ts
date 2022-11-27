@@ -11,9 +11,9 @@ export default class CarLightControlAPI implements CarLightControl {
   public async switch(): Promise<void> {
     try {
       if (!this.isLightOn) {
-        await fetch(`${this.apiUrl}/ledon`);
+        await fetch(`${this.apiUrl}/led/on`);
       } else {
-        await fetch(`${this.apiUrl}/ledoff`);
+        await fetch(`${this.apiUrl}/led/off`);
       }
     } catch (error) {
     } finally {

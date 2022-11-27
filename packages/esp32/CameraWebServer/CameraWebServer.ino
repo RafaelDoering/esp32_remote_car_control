@@ -8,13 +8,13 @@
 const char* ssid = "*********";
 const char* password = "*********";
 
-extern int LEFT_BACKWARD_PIN =  2;
+extern int LEFT_BACKWARD_PIN = 2;
 extern int LEFT_FORWARD_PIN = 14;
-extern int RIGHT_FORWARD_PIN = 15;
 extern int RIGHT_BACKWARD_PIN = 13;
-extern int LEAD_PIN = 4;
+extern int RIGHT_FORWARD_PIN = 15;
+extern int LED_PIN = 4;
 
-extern String WiFiAddr ="";
+extern String WiFiAddr = "";
 
 void startCameraServer();
 
@@ -27,14 +27,14 @@ void setup() {
   pinMode(LEFT_FORWARD_PIN, OUTPUT);
   pinMode(RIGHT_FORWARD_PIN, OUTPUT);
   pinMode(RIGHT_BACKWARD_PIN, OUTPUT);
-  pinMode(LEAD_PIN, OUTPUT);
+  pinMode(LED_PIN, OUTPUT);
 
   //initialize
   digitalWrite(LEFT_BACKWARD_PIN, LOW);
   digitalWrite(LEFT_FORWARD_PIN, LOW);
   digitalWrite(RIGHT_FORWARD_PIN, LOW);
   digitalWrite(RIGHT_BACKWARD_PIN, LOW);
-  digitalWrite(LEAD_PIN, LOW);
+  digitalWrite(LED_PIN, LOW);
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -104,4 +104,4 @@ void setup() {
   Serial.println("' to connect");
 }
 
-void loop() { }
+void loop() {}

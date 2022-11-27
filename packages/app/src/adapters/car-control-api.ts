@@ -10,10 +10,10 @@ export default class CarLightControlAPI implements CarControl {
 
   public async executeAction(action: Action): Promise<void> {
     if (action === Action.ACCELERATE) {
-      await fetch(`${this.apiUrl}/go`);
+      await fetch(`${this.apiUrl}/forward`);
     }
     if (action === Action.REVERSE) {
-      await fetch(`${this.apiUrl}/back`);
+      await fetch(`${this.apiUrl}/backward`);
     }
     if (action === Action.TURN_LEFT) {
       await fetch(`${this.apiUrl}/left`);
