@@ -8,15 +8,17 @@
 const char* ssid = "*********";
 const char* password = "*********";
 
-extern int LEFT_BACKWARD_PIN = 2;
-extern int LEFT_FORWARD_PIN = 14;
-extern int RIGHT_BACKWARD_PIN = 13;
-extern int RIGHT_FORWARD_PIN = 15;
+extern int LEFT_BACKWARD_PIN = 14;
+extern int LEFT_FORWARD_PIN = 2;
+extern int RIGHT_BACKWARD_PIN = 15;
+extern int RIGHT_FORWARD_PIN = 13;
 extern int LED_PIN = 4;
 
 extern String WiFiAddr = "";
 
 void startCameraServer();
+void startCarServer();
+void startLightServer();
 
 void setup() {
   Serial.begin(115200);
@@ -97,6 +99,8 @@ void setup() {
   Serial.println("WiFi connected");
 
   startCameraServer();
+  startCarServer();
+  startLightServer();
 
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());

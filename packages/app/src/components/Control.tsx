@@ -61,6 +61,10 @@ const XboxControllerActionKeys = [
   XboxControllerGamepadControlIndex.B,
 ];
 
+const XboxControllerLightKeys = [
+  XboxControllerGamepadControlIndex.A,
+];
+
 function mapXboxControllerGamepadControlIndexToAction(
   xboxControllerGamepadControlIndex: XboxControllerGamepadControlIndex
 ): Action {
@@ -83,10 +87,10 @@ const BACKEND_URL = 'http://192.168.0.184';
 const GAMEPAD_CONTROL_POLLING_MILLISECONDS = 50;
 
 function Control() {
-  const carControlApi = new CarControlAPI(BACKEND_URL);
+  const carControlApi = new CarControlAPI(`${BACKEND_URL}:8000`);
   const carControlService = new CarControlService(carControlApi);
 
-  const carLightControlApi = new CarLightControlAPI(BACKEND_URL);
+  const carLightControlApi = new CarLightControlAPI(`${BACKEND_URL}:8001`);
   const carLightControlService = new CarLightControlService(carLightControlApi);
 
   useEffect(() => {
@@ -125,6 +129,13 @@ function Control() {
             carControlService.executeAction(mapXboxControllerGamepadControlIndexToAction(gamepadButtonIndex));
           }
         }
+        for (const gamepadButtonIndex of XboxControllerLightKeys as number[]) {
+          const button = gamepad.buttons[gamepadButtonIndex];
+
+          if (button?.pressed) {
+            carLightControlService.turnSwitch();
+          }
+        }
       }
     }, GAMEPAD_CONTROL_POLLING_MILLISECONDS);
 
@@ -134,7 +145,7 @@ function Control() {
   }, []);
 
   return <img
-    src={`${BACKEND_URL}:81/stream`}
+    src={`${BACKEND_URL}:8003/stream`}
     style={{width: "300px", transform: "transform:rotate(180deg)"}}
   />;
 }

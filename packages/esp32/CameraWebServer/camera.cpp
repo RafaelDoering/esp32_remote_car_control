@@ -5,20 +5,7 @@
 #include "camera_index.h"
 #include "Arduino.h"
 
-extern int LEFT_BACKWARD_PIN;
-extern int LEFT_FORWARD_PIN;
-extern int RIGHT_BACKWARD_PIN;
-extern int RIGHT_FORWARD_PIN;
-extern int LED_PIN;
-
 extern String WiFiAddr;
-
-void WheelAction(
-  bool IS_LEFT_BACKWARD_WHEEL_ON,
-  bool IS_LEFT_FORWARD_WHEEL_ON,
-  bool IS_RIGHT_BACKWARD_WHEEL_ON,
-  bool IS_RIGHT_FORWARD_WHEEL_ON
-);
 
 typedef struct {
         size_t size; //number of values used for filtering
@@ -281,54 +268,6 @@ static esp_err_t index_handler(httpd_req_t *req){
     return httpd_resp_send(req, (const char *)index_ov2640_html_gz, index_ov2640_html_gz_len);
 }
 
-static esp_err_t forward_handler(httpd_req_t *req){
-    WheelAction(true, false, true, false);
-    Serial.println("Forward");
-    httpd_resp_set_type(req, "text/html");
-    return httpd_resp_send(req, "OK", 2);
-}
-static esp_err_t backward_handler(httpd_req_t *req){
-    WheelAction(false, true, false, true);
-    Serial.println("Backward");
-    httpd_resp_set_type(req, "text/html");
-    return httpd_resp_send(req, "OK", 2);
-}
-
-static esp_err_t left_handler(httpd_req_t *req){
-    WheelAction(true, false, false, true);
-    Serial.println("Left");
-    httpd_resp_set_type(req, "text/html");
-    return httpd_resp_send(req, "OK", 2);
-}
-
-static esp_err_t right_handler(httpd_req_t *req){
-    WheelAction(false, true, true, false);
-    Serial.println("Right");
-    httpd_resp_set_type(req, "text/html");
-    return httpd_resp_send(req, "OK", 2);
-}
-
-static esp_err_t stop_handler(httpd_req_t *req){
-    WheelAction(false, false, false, false);
-    Serial.println("Stop");
-    httpd_resp_set_type(req, "text/html");
-    return httpd_resp_send(req, "OK", 2);
-}
-
-static esp_err_t led_on_handler(httpd_req_t *req){
-    digitalWrite(LED_PIN, HIGH);
-    Serial.println("LED ON");
-    httpd_resp_set_type(req, "text/html");
-    return httpd_resp_send(req, "OK", 2);
-}
-
-static esp_err_t led_off_handler(httpd_req_t *req){
-    digitalWrite(LED_PIN, LOW);
-    Serial.println("LED OFF");
-    httpd_resp_set_type(req, "text/html");
-    return httpd_resp_send(req, "OK", 2);
-}
-
 void startCameraServer(){
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 
@@ -353,113 +292,27 @@ void startCameraServer(){
         .user_ctx  = NULL
     };
 
-   httpd_uri_t stream_uri = {
+    httpd_uri_t stream_uri = {
         .uri       = "/stream",
         .method    = HTTP_GET,
         .handler   = stream_handler,
         .user_ctx  = NULL
     };
 
-    httpd_uri_t forward_uri = {
-        .uri       = "/forward",
-        .method    = HTTP_GET,
-        .handler   = forward_handler,
-        .user_ctx  = NULL
-    };
-
-    httpd_uri_t backward_uri = {
-        .uri       = "/backward",
-        .method    = HTTP_GET,
-        .handler   = backward_handler,
-        .user_ctx  = NULL
-    };
-
-    httpd_uri_t left_uri = {
-        .uri       = "/left",
-        .method    = HTTP_GET,
-        .handler   = left_handler,
-        .user_ctx  = NULL
-    };
-
-    httpd_uri_t right_uri = {
-        .uri       = "/right",
-        .method    = HTTP_GET,
-        .handler   = right_handler,
-        .user_ctx  = NULL
-    };
-
-    httpd_uri_t stop_uri = {
-        .uri       = "/stop",
-        .method    = HTTP_GET,
-        .handler   = stop_handler,
-        .user_ctx  = NULL
-    };
-
-    httpd_uri_t led_on_uri = {
-        .uri       = "/led/on",
-        .method    = HTTP_GET,
-        .handler   = led_on_handler,
-        .user_ctx  = NULL
-    };
-
-    httpd_uri_t led_off_uri = {
-        .uri       = "/led/off",
-        .method    = HTTP_GET,
-        .handler   = led_off_handler,
-        .user_ctx  = NULL
-    };
-
     ra_filter_init(&ra_filter, 20);
-
-    Serial.printf("Starting web server on port: '%d'\n", config.server_port);
+    config.server_port = 8002;
+    config.ctrl_port = 32766;
+    Serial.printf("Starting camera server on port: '%d'\n", config.server_port);
     if (httpd_start(&camera_httpd, &config) == ESP_OK) {
         httpd_register_uri_handler(camera_httpd, &index_uri);
         httpd_register_uri_handler(camera_httpd, &cmd_uri);
         httpd_register_uri_handler(camera_httpd, &status_uri);
-        httpd_register_uri_handler(camera_httpd, &forward_uri);
-        httpd_register_uri_handler(camera_httpd, &backward_uri);
-        httpd_register_uri_handler(camera_httpd, &left_uri);
-        httpd_register_uri_handler(camera_httpd, &right_uri);
-        httpd_register_uri_handler(camera_httpd, &stop_uri);
-        httpd_register_uri_handler(camera_httpd, &led_on_uri);
-        httpd_register_uri_handler(camera_httpd, &led_off_uri);
     }
 
-    config.server_port += 1;
-    config.ctrl_port += 1;
-    Serial.printf("Starting stream server on port: '%d'\n", config.server_port);
+    config.server_port = 8003;
+    config.ctrl_port = 32765;
+    Serial.printf("Starting stream server on poßrt: '%d'\n", config.server_port);
     if (httpd_start(&stream_httpd, &config) == ESP_OK) {
         httpd_register_uri_handler(stream_httpd, &stream_uri);
     }
-}
-
-void WheelAction(
-  bool IS_LEFT_BACKWARD_WHEEL_ON,
-  bool IS_LEFT_FORWARD_WHEEL_ON,
-  bool IS_RIGHT_BACKWARD_WHEEL_ON,
-  bool IS_RIGHT_FORWARD_WHEEL_ON
-) {
-  if (IS_LEFT_BACKWARD_WHEEL_ON) {
-    digitalWrite(LEFT_BACKWARD_PIN, 1);
-  } else {
-    digitalWrite(LEFT_BACKWARD_PIN, 0);
-  }
-
-  if (IS_LEFT_FORWARD_WHEEL_ON) {
-    digitalWrite(LEFT_FORWARD_PIN, 1);
-  } else {
-    digitalWrite(LEFT_FORWARD_PIN, 0);
-  }
-
-  if (IS_RIGHT_BACKWARD_WHEEL_ON) {
-    digitalWrite(RIGHT_FORWARD_PIN, 1);
-  } else {
-    digitalWrite(RIGHT_FORWARD_PIN, 0);
-  }
-
-  if (IS_RIGHT_FORWARD_WHEEL_ON) {
-    digitalWrite(RIGHT_BACKWARD_PIN, 1);
-  } else {
-    digitalWrite(RIGHT_BACKWARD_PIN, 0);
-  }
 }
